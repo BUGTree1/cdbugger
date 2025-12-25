@@ -1,4 +1,12 @@
 DONE:
+- Choose rendering library - SDL3
 
 TODO:
-- Choose another rendering library (not SFML)
+- finish textures and textfields
+- make UI in -1 to 1 range coordinates
+- make tiling UI mode (like slicing the elements in x%
+ vertically or horizontally and rendering on the halves that also can be cut)
+- source code view
+- breakpoints
+- variables at breakpoint
+- live view of variables (maybe at a "snapshot" line)

@@ -3,7 +3,7 @@
 {
 "name": "Generic",
 "includePath": [
-
+"/usr/include/harfbuzz", "/usr/include/glib-2.0", "/usr/lib/glib-2.0/include", "/usr/include/sysprof-6", "/usr/include/freetype2", "/home/szyme/vcpkg/installed/x64-linux/lib/pkgconfig/../../include", "/usr/include/libpng16", "/usr/include/freetype2", "/home/szyme/vcpkg/installed/x64-linux/lib/pkgconfig/../../include", "/usr/include/libpng16"
 ],
 "defines": [
 

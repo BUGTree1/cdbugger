@@ -14,7 +14,7 @@ linker_flags           : []
 output_dir             : "bin"
 source_dir             : "src"
 libs                   : []
-pkgconf_libs           : []
+pkgconf_libs           : ["sdl3", "sdl3-ttf", "sdl3-image", "glm", "fontconfig"]
 lib_dirs               : []
 include_dirs           : []
 run_args               : []

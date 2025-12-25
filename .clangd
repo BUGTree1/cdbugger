@@ -1,2 +1,12 @@
 CompileFlags:
   Add:
+    - "-I/usr/include/harfbuzz"
+    - "-I/usr/include/glib-2.0"
+    - "-I/usr/lib/glib-2.0/include"
+    - "-I/usr/include/sysprof-6"
+    - "-I/usr/include/freetype2"
+    - "-I/home/szyme/vcpkg/installed/x64-linux/lib/pkgconfig/../../include"
+    - "-I/usr/include/libpng16"
+    - "-I/usr/include/freetype2"
+    - "-I/home/szyme/vcpkg/installed/x64-linux/lib/pkgconfig/../../include"
+    - "-I/usr/include/libpng16"
