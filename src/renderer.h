@@ -4,29 +4,46 @@
 
 #include "utils.h"
 
+enum Abstract_Position {
+    POSITION_CENTER   ,
+    POSITION_TOP      ,
+    POSITION_BOTTOM   ,
+    POSITION_LEFT     ,
+    POSITION_RIGHT    ,
+    POSITION_LT_CORNER, // left-top corner
+    POSITION_LB_CORNER, // left-bottom corner
+    POSITION_RT_CORNER, // right-top corner
+    POSITION_RB_CORNER, // right-bottom corner
+};
+
 struct Text_CStyle {
+    Abstract_Position position;
     glm::vec4 text_color;
     glm::vec4 bg_color;
 };
 
 struct Text_Style {
+    Abstract_Position position;
     glm::vec4 text_color;
     SDL_Texture* bg_texture;
 };
 
 struct Textfield_CStyle {
+    Abstract_Position position;
     glm::vec4 text_color;
     glm::vec4 bg_color;
     glm::vec4 empty_text_color;
 };
 
 struct Textfield_Style {
+    Abstract_Position position;
     glm::vec4 text_color;
     SDL_Texture* bg_texture;
     glm::vec4 empty_text_color;
 };
 
 struct Button_CStyle {
+    Abstract_Position position;
     glm::vec4 text_color;
     glm::vec4 bg_color;
     glm::vec4 hover_text_color;
@@ -37,6 +54,7 @@ struct Button_CStyle {
 };
 
 struct Button_Style {
+    Abstract_Position position;
     glm::vec4 text_color;
     SDL_Texture* bg_texture;
     glm::vec4 hover_text_color;
@@ -108,7 +126,11 @@ public:
     void deinit();
     void render();
 
-    // Note: all drawing functions use normalized coordinates (-1,1) and bounds is (x,y,width,height) and colors are (r,g,b,a)
+    // Note: all drawing functions use:
+    // - normalized coordinates: vec2(x(left: -1...right: 1), y(up: -1...down: 1))
+    // - bounds are vec4(x,y,width,height)
+    // - colors are vec4(r,g,b,a)
+    // - position defined in bounds is at the left-top corner of the UI element
     void draw_color_text(std::string str, glm::vec4 bounds, Text_CStyle style);
     void draw_color_textfield(std::string* str, bool* focused, glm::vec4 bounds, Textfield_CStyle style);
     Button_CState draw_color_button(std::string str, glm::vec4 bounds, Button_CStyle style);

@@ -2,6 +2,7 @@ DONE:
 - Choose rendering library - SDL3
 
 TODO:
+- all code TODO: comments
 - finish textures and textfields
 - make UI in -1 to 1 range coordinates
 - make tiling UI mode (like slicing the elements in x%

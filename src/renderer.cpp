@@ -21,11 +21,12 @@ void Renderer::init() {
 
     ASSERT_SDL(SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND));
 
-    SDL_FPoint fmouse;
-    SDL_GetMouseState(&fmouse.x, &fmouse.y);
-    SDL_Point mouse = {(int)fmouse.x, (int)fmouse.y};
-    SDL_DisplayID display = SDL_GetDisplayForPoint(&mouse);
-    SDL_SetWindowPosition(window, SDL_WINDOWPOS_UNDEFINED_DISPLAY(display),SDL_WINDOWPOS_UNDEFINED_DISPLAY(display));
+    // TODO: Test if this is surely working because mouse state i think is window coordinates
+    //SDL_FPoint fmouse;
+    //SDL_GetMouseState(&fmouse.x, &fmouse.y);
+    //SDL_Point mouse = {(int)fmouse.x, (int)fmouse.y};
+    //SDL_DisplayID display = SDL_GetDisplayForPoint(&mouse);
+    //SDL_SetWindowPosition(window, SDL_WINDOWPOS_UNDEFINED_DISPLAY(display),SDL_WINDOWPOS_UNDEFINED_DISPLAY(display));
 
     string font_path;
 
@@ -55,15 +56,28 @@ void Renderer::init() {
     ASSERT_SDL(text_engine);
 
     text_bg_texture         = IMG_LoadTexture(renderer, "text_bg.png");
-    ASSERT_SDL(text_bg_texture);
     textfield_bg_texture    = IMG_LoadTexture(renderer, "textfield_bg.png");
-    ASSERT_SDL(textfield_bg_texture);
     button_bg_texture       = IMG_LoadTexture(renderer, "button_bg.png");
-    ASSERT_SDL(button_bg_texture);
     button_hover_bg_texture = IMG_LoadTexture(renderer, "button_bg_hover.png");
-    ASSERT_SDL(button_hover_bg_texture);
     button_click_bg_texture = IMG_LoadTexture(renderer, "button_bg_click.png");
+    ASSERT_SDL(text_bg_texture);
+    ASSERT_SDL(textfield_bg_texture);
+    ASSERT_SDL(button_bg_texture);
+    ASSERT_SDL(button_hover_bg_texture);
     ASSERT_SDL(button_click_bg_texture);
+    //TODO: IDK: should all be ADD not only buttons?
+    SDL_BlendMode texture_blend_mode = SDL_BLENDMODE_ADD;
+    SDL_SetTextureBlendMode(text_bg_texture, texture_blend_mode);
+    SDL_SetTextureBlendMode(textfield_bg_texture, texture_blend_mode);
+    SDL_SetTextureBlendMode(button_bg_texture, texture_blend_mode);
+    SDL_SetTextureBlendMode(button_hover_bg_texture, texture_blend_mode);
+    SDL_SetTextureBlendMode(button_click_bg_texture, texture_blend_mode);
+    SDL_ScaleMode texture_scale_mode = SDL_SCALEMODE_NEAREST;
+    SDL_SetTextureScaleMode(text_bg_texture, texture_scale_mode);
+    SDL_SetTextureScaleMode(textfield_bg_texture, texture_scale_mode);
+    SDL_SetTextureScaleMode(button_bg_texture, texture_scale_mode);
+    SDL_SetTextureScaleMode(button_hover_bg_texture, texture_scale_mode);
+    SDL_SetTextureScaleMode(button_click_bg_texture, texture_scale_mode);
 }
 
 void Renderer::deinit() {
@@ -86,27 +100,39 @@ void Renderer::render() {
     SDL_FPoint mouse_pos_window = (SDL_FPoint){};
     mouse_flags = SDL_GetMouseState(&mouse_pos_window.x, &mouse_pos_window.y);
     SDL_RenderCoordinatesFromWindow(renderer, mouse_pos_window.x, mouse_pos_window.y, &mouse_pos.x, &mouse_pos.y);
-    
+
     SDL_SetRenderDrawColorFloat(renderer, 0, 0, 0, 1);
     SDL_RenderClear(renderer);
 
     string s = "Text Field";
     bool f = true;
-                        draw_color_text(     "Text", vec4(0,0,  300,100), (Text_CStyle)     { vec4(0,0,0,1), vec4(1,1,1,1)});
-                        draw_color_textfield(&s, &f, vec4(0,200,300,100), (Textfield_CStyle){ vec4(0,0,0,1), vec4(1,1,1,1), vec4(0.5,0.5,0.5,1)});
-    Button_CState bcs = draw_color_button( "Button", vec4(0,400,300,100), (Button_CStyle)   { vec4(0,0,0,1), vec4(1,1,1,1), vec4(0,0,0,1), vec4(0.5f,0.5f,0.5f,1),vec4(1,1,1,1), vec4(0,0,0,1), 0.1f});
-    
-                      draw_text(     "Text", vec4(400,0,  300,100), (Text_Style)     { vec4(0,0,0,1), text_bg_texture});
-                      draw_textfield(&s, &f, vec4(400,200,300,100), (Textfield_Style){ vec4(0,0,0,1), textfield_bg_texture, vec4(0.5,0.5,0.5,1)});
-    Button_State bs = draw_button( "Button", vec4(400,400,300,100), (Button_Style)   { vec4(0,0,0,1), button_bg_texture, vec4(1,0,0,1), button_hover_bg_texture, vec4(0,1,0,1), button_click_bg_texture, 0.1f});
-    
+    /*
+                        draw_color_text("Text"     , vec4(0  ,0,  300,100), (Text_CStyle)     { POSITION_CENTER, vec4(0,0,0,1), vec4(1,1,1,1)});
+                        draw_color_textfield(&s, &f, vec4(0  ,200,300,100), (Textfield_CStyle){ POSITION_CENTER, vec4(0,0,0,1), vec4(1,1,1,1), vec4(0.5,0.5,0.5,1)});
+    Button_CState bcs = draw_color_button("Button" , vec4(0  ,400,300,100), (Button_CStyle)   { POSITION_CENTER, vec4(0,0,0,1), vec4(1,1,1,1), vec4(0,0,0,1), vec4(0.5f,0.5f,0.5f,1),vec4(1,1,1,1), vec4(0,0,0,1), 0.1f});
+
+                        draw_text("Text"           , vec4(400,0  ,300,100), (Text_Style)     { POSITION_CENTER, vec4(1,1,0,1), text_bg_texture});
+                        draw_textfield(&s, &f      , vec4(400,200,300,100), (Textfield_Style){ POSITION_CENTER, vec4(1,1,0,1), textfield_bg_texture, vec4(0.5,0.5,0.5,1)});
+    Button_State bs   = draw_button("Button"       , vec4(400,400,300,100), (Button_Style)   { POSITION_CENTER, vec4(1,1,0,1), button_bg_texture   , vec4(1,1,0,1), button_hover_bg_texture, vec4(1,1,0,1), button_click_bg_texture, 0.1f});
+    */
+
+    draw_color_textfield(&s, &f, vec4(0  ,0  ,100,100), (Textfield_CStyle){ POSITION_LT_CORNER, vec4(0,0,0,1), vec4(1,1,1,1), vec4(0.5,0.5,0.5,1)});
+    draw_color_textfield(&s, &f, vec4(200,0  ,100,100), (Textfield_CStyle){ POSITION_LEFT     , vec4(0,0,0,1), vec4(1,1,1,1), vec4(0.5,0.5,0.5,1)});
+    draw_color_textfield(&s, &f, vec4(400,0  ,100,100), (Textfield_CStyle){ POSITION_LB_CORNER, vec4(0,0,0,1), vec4(1,1,1,1), vec4(0.5,0.5,0.5,1)});
+    draw_color_textfield(&s, &f, vec4(0  ,200,100,100), (Textfield_CStyle){ POSITION_TOP      , vec4(0,0,0,1), vec4(1,1,1,1), vec4(0.5,0.5,0.5,1)});
+    draw_color_textfield(&s, &f, vec4(200,200,100,100), (Textfield_CStyle){ POSITION_CENTER   , vec4(0,0,0,1), vec4(1,1,1,1), vec4(0.5,0.5,0.5,1)});
+    draw_color_textfield(&s, &f, vec4(400,200,100,100), (Textfield_CStyle){ POSITION_BOTTOM   , vec4(0,0,0,1), vec4(1,1,1,1), vec4(0.5,0.5,0.5,1)});
+    draw_color_textfield(&s, &f, vec4(0  ,400,100,100), (Textfield_CStyle){ POSITION_RT_CORNER, vec4(0,0,0,1), vec4(1,1,1,1), vec4(0.5,0.5,0.5,1)});
+    draw_color_textfield(&s, &f, vec4(200,400,100,100), (Textfield_CStyle){ POSITION_RIGHT    , vec4(0,0,0,1), vec4(1,1,1,1), vec4(0.5,0.5,0.5,1)});
+    draw_color_textfield(&s, &f, vec4(400,400,100,100), (Textfield_CStyle){ POSITION_RB_CORNER, vec4(0,0,0,1), vec4(1,1,1,1), vec4(0.5,0.5,0.5,1)});
+
     SDL_RenderPresent(renderer);
 }
 
-void Renderer::draw_color_text(std::string str, glm::vec4 bounds, Text_CStyle style){
-    
-    if(style.bg_color.w != 0){
-        ASSERT_SDL(SDL_SetRenderDrawColorFloat(renderer, style.bg_color.x, style.bg_color.y, style.bg_color.z, style.bg_color.w));
+void Renderer::draw_color_text(string str, vec4 bounds, Text_CStyle style){
+
+    if(style.bg_color.a != 0){
+        ASSERT_SDL(SDL_SetRenderDrawColorFloat(renderer, style.bg_color.r, style.bg_color.g, style.bg_color.b, style.bg_color.a));
         SDL_FRect bounds_rect = (SDL_FRect){bounds.x, bounds.y, bounds.z, bounds.w};
         ASSERT_SDL(SDL_RenderFillRect(renderer, &bounds_rect));
     }
@@ -114,19 +140,60 @@ void Renderer::draw_color_text(std::string str, glm::vec4 bounds, Text_CStyle st
     TTF_Text* text = TTF_CreateText(text_engine, font, str.c_str(), 0);
     ASSERT_SDL(text);
 
-    ASSERT_SDL(TTF_SetTextColorFloat(text, style.text_color.x, style.text_color.y, style.text_color.z, style.text_color.w));
-    ASSERT_SDL(TTF_SetTextWrapWidth(text, bounds.z));
-    ASSERT_SDL(TTF_DrawRendererText(text, bounds.x, bounds.y));
+    ASSERT_SDL(TTF_SetTextColorFloat(text, style.text_color.r, style.text_color.g, style.text_color.b, style.text_color.a));
+    // TODO: IDK: ASSERT_SDL(TTF_SetTextWrapWidth(text, text_bounds.z));
+
+    vec4 text_bounds = bounds;
+
+    ivec2 text_sizei = ivec2(0,0);
+    ASSERT_SDL(TTF_GetTextSize(text, &text_sizei.x, &text_sizei.y));
+    vec2 text_size = text_sizei;
+
+    //TODO: wierd crisp font when position changed
+
+    switch (style.position) {
+        case POSITION_CENTER   :
+        text_bounds = vec4(xy(bounds) + (zw(bounds) / 2.0f) - (text_size / 2.0f), zw(bounds));
+        break;
+        case POSITION_TOP      :
+
+        break;
+        case POSITION_BOTTOM   :
+
+        break;
+        case POSITION_LEFT     :
+
+        break;
+        case POSITION_RIGHT    :
+
+        break;
+        case POSITION_LT_CORNER:
+        break;
+        case POSITION_LB_CORNER:
+
+        break;
+        case POSITION_RT_CORNER:
+
+        break;
+        case POSITION_RB_CORNER:
+
+        break;
+        default:
+        UNREACHABLE();
+        break;
+    }
+
+    ASSERT_SDL(TTF_DrawRendererText(text, text_bounds.x, text_bounds.y));
 
     TTF_DestroyText(text);
 }
 
-void Renderer::draw_color_textfield(std::string* str, bool* focused, glm::vec4 bounds, Textfield_CStyle style){
+void Renderer::draw_color_textfield(string* str, bool* focused, vec4 bounds, Textfield_CStyle style){
 
-    draw_color_text(*str, bounds, (Text_CStyle){style.text_color, style.bg_color});
+    draw_color_text(*str, bounds, (Text_CStyle){style.position, style.text_color, style.bg_color});
 }
 
-Button_CState Renderer::draw_color_button(std::string str, glm::vec4 bounds, Button_CStyle style){
+Button_CState Renderer::draw_color_button(string str, vec4 bounds, Button_CStyle style){
 
     SDL_FRect bounds_rect = {bounds.x,bounds.y,bounds.z,bounds.w};
     bool hover = SDL_PointInRectFloat((SDL_FPoint*)&mouse_pos, &bounds_rect);
@@ -179,6 +246,7 @@ Button_CState Renderer::draw_color_button(std::string str, glm::vec4 bounds, But
     }
 
     draw_color_text(str, bounds, (Text_CStyle){
+        style.position,
         lerp(state->base_text_color, state->target_text_color, (float)state->gradient_time),
         lerp(state->base_bg_color, state->target_bg_color, (float)state->gradient_time)
     });
@@ -192,17 +260,17 @@ Button_CState Renderer::draw_color_button(std::string str, glm::vec4 bounds, But
 
 
 
-void Renderer::draw_text(std::string str, glm::vec4 bounds, Text_Style style){
+void Renderer::draw_text(string str, vec4 bounds, Text_Style style){
     SDL_FRect dst_rect = (SDL_FRect){bounds.x,bounds.y,bounds.z,bounds.w};
     ASSERT_SDL(SDL_RenderTexture(renderer, style.bg_texture, NULL, &dst_rect));
-    draw_color_text(str, bounds, (Text_CStyle){style.text_color, vec4(0,0,0,0)});
+    draw_color_text(str, bounds, (Text_CStyle){style.position, style.text_color, vec4(0,0,0,0)});
 }
 
-void Renderer::draw_textfield(std::string* str, bool* focused, glm::vec4 bounds, Textfield_Style style){
-    draw_text(*str, bounds, (Text_Style){style.text_color, style.bg_texture});
+void Renderer::draw_textfield(string* str, bool* focused, vec4 bounds, Textfield_Style style){
+    draw_text(*str, bounds, (Text_Style){style.position, style.text_color, style.bg_texture});
 }
 
-Button_State Renderer::draw_button(std::string str, glm::vec4 bounds, Button_Style style){
+Button_State Renderer::draw_button(string str, vec4 bounds, Button_Style style){
     SDL_FRect bounds_rect = {bounds.x,bounds.y,bounds.z,bounds.w};
     bool hover = SDL_PointInRectFloat((SDL_FPoint*)&mouse_pos, &bounds_rect);
     bool down = (SDL_BUTTON_LMASK & mouse_flags) && hover;
@@ -253,16 +321,15 @@ Button_State Renderer::draw_button(std::string str, glm::vec4 bounds, Button_Sty
         state->base_text_color   = style.click_text_color;
     }
 
-    // figure out blending ( base texture wierd? )
-
     SDL_FRect dst_rect = (SDL_FRect){bounds.x,bounds.y,bounds.z,bounds.w};
-    //ASSERT_SDL(SDL_SetTextureAlphaMod(state->base_bg_texture, (Uint8)((1 - state->gradient_time) * 255)));
+    ASSERT_SDL(SDL_SetTextureAlphaModFloat(state->base_bg_texture, 1 - state->gradient_time));
     ASSERT_SDL(SDL_RenderTexture(renderer, state->base_bg_texture, NULL, &dst_rect));
 
-    //ASSERT_SDL(SDL_SetTextureAlphaMod(state->target_bg_texture, (Uint8)(state->gradient_time * 255)));
-    //ASSERT_SDL(SDL_RenderTexture(renderer, state->target_bg_texture, NULL, &dst_rect));
+    ASSERT_SDL(SDL_SetTextureAlphaModFloat(state->target_bg_texture, state->gradient_time));
+    ASSERT_SDL(SDL_RenderTexture(renderer, state->target_bg_texture, NULL, &dst_rect));
 
     draw_color_text(str, bounds, (Text_CStyle){
+        style.position,
         lerp(state->base_text_color, state->target_text_color, (float)state->gradient_time),
         vec4(0,0,0,0)
     });

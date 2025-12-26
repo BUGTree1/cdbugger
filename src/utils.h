@@ -21,11 +21,13 @@
 #include <glm/gtx/compatibility.hpp>
 #include <glm/gtx/hash.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/vec_swizzle.hpp>
 
 #include "subprocess.h"
 
 #define ASSERT_SDL(expr) if(!(expr)){ error(string(__FILE__) + string(":") + to_string(__LINE__) + string(": ") + string(SDL_GetError())); }
 #define UTILS_ASSERT(expr) if(!(expr)){ error(string(__FILE__) + string(":") + to_string(__LINE__)); }
+#define UNREACHABLE() error(string("UNREACHABLE: ") + string(__FILE__) + string(":") + to_string(__LINE__));
 
 void error(std::string msg, int code = 1);
 void warning(std::string msg);
