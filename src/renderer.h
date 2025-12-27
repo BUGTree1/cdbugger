@@ -127,9 +127,7 @@ public:
     void render();
 
     // Note: all drawing functions use:
-    // - normalized coordinates: vec2(x(left: -1...right: 1), y(up: -1...down: 1))
-    // - bounds are vec4(x,y,width,height)
-    // - colors are vec4(r,g,b,a)
+    // - TODO: CHOOSE: normalized coordinates
     // - position defined in bounds is at the left-top corner of the UI element
     void draw_color_text(std::string str, glm::vec4 bounds, Text_CStyle style);
     void draw_color_textfield(std::string* str, bool* focused, glm::vec4 bounds, Textfield_CStyle style);
