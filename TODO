@@ -1,13 +1,14 @@
 DONE:
 - Choose rendering library - SDL3
-
-TODO:
-- make a name (define or simmilar) for bounds = vec4(x,y,w,h)
-- make a name (define or simmilar) for colors = vec4(r,g,b,a)
-- CHOOSE coordinates: -1...1 centered, 0...1 just normalized (I think just normalized)
+- namespace CDBugger
+- Color wrapper class
+- Bounds wrapper class
 - make the rendering fully static (take a list in the renderer of all the elements and render them all in a funtion
 so we can use a global renderer state, for buttons or simmilar use callback or something, maybe use classes for
 elements so the list  will be of base element and text, button... will be subclasses)
+
+TODO:
+- make coordinates:  0...1 normalized
 - all code TODO: comments
 - finish textures and textfields
 - make UI in -1 to 1 range coordinates

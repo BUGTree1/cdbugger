@@ -4,6 +4,10 @@
 
 #include "utils.h"
 
+namespace CDBugger {
+
+class Renderer;
+
 enum Abstract_Position {
     POSITION_CENTER   ,
     POSITION_TOP      ,
@@ -16,95 +20,79 @@ enum Abstract_Position {
     POSITION_RB_CORNER, // right-bottom corner
 };
 
-struct Text_CStyle {
-    Abstract_Position position;
-    glm::vec4 text_color;
-    glm::vec4 bg_color;
+struct UI_Background {
+    // if texture is NULL use color
+    SDL_Texture* texture;
+    Color color;
 };
 
-struct Text_Style {
-    Abstract_Position position;
-    glm::vec4 text_color;
-    SDL_Texture* bg_texture;
+class UI_Element {
+public:
+
+    // Note: all drawing functions use:
+    // - normalized coordinates (0,1)
+    // - position (x,y) defined in bounds is at the left-top corner of the UI element
+    Bounds bounds;
+
+    virtual void render(Renderer* renderer) {};
 };
 
-struct Textfield_CStyle {
+class Text : public UI_Element {
+public:
     Abstract_Position position;
-    glm::vec4 text_color;
-    glm::vec4 bg_color;
-    glm::vec4 empty_text_color;
+    std::string       text;
+
+    Color         fg;
+    UI_Background bg;
+
+    void render(Renderer* renderer) override;
 };
 
-struct Textfield_Style {
-    Abstract_Position position;
-    glm::vec4 text_color;
-    SDL_Texture* bg_texture;
-    glm::vec4 empty_text_color;
-};
+class Button : public UI_Element {
+public:
+    Abstract_Position text_position;
+    std::string       text;
 
-struct Button_CStyle {
-    Abstract_Position position;
-    glm::vec4 text_color;
-    glm::vec4 bg_color;
-    glm::vec4 hover_text_color;
-    glm::vec4 hover_bg_color;
-    glm::vec4 click_text_color;
-    glm::vec4 click_bg_color;
-    float gradient_duration;
-};
+    UI_Background bg;
+    UI_Background hover_bg;
+    UI_Background click_bg;
+    Color         fg;
+    Color         hover_fg;
+    Color         click_fg;
+    double        gradient_duration;
 
-struct Button_Style {
-    Abstract_Position position;
-    glm::vec4 text_color;
-    SDL_Texture* bg_texture;
-    glm::vec4 hover_text_color;
-    SDL_Texture* hover_bg_texture;
-    glm::vec4 click_text_color;
-    SDL_Texture* click_bg_texture;
-    float gradient_duration;
-};
+    void* user_pointer;
+    void (*hover_cb)  (Renderer* renderer, void* user_pointer);
+    void (*unhover_cb)(Renderer* renderer, void* user_pointer);
+    void (*click_cb)  (Renderer* renderer, void* user_pointer);
+    void (*up_cb)     (Renderer* renderer, void* user_pointer);
 
-struct Button_CState {
-    bool down; // is currently down/pressed
-    bool down_now; // is pressed this frame (wasnt the frame before)
-    bool up_now; // is released this frame (was down the frame before)
+    bool down;
     bool hover;
-    bool hover_now;
-    bool unhover_now;
-
     double gradient_time;
-    glm::vec4 base_text_color;
-    glm::vec4 target_text_color;
-    glm::vec4 base_bg_color;
-    glm::vec4 target_bg_color;
-};
 
-struct Button_State {
-    bool down; // is currently down/pressed
-    bool down_now; // is pressed this frame (wasnt the frame before)
-    bool up_now; // is released this frame (was down the frame before)
-    bool hover;
-    bool hover_now;
-    bool unhover_now;
+    struct {
+        UI_Background bg;
+        Color fg;
+    } base;
+    struct {
+        UI_Background bg;
+        Color fg;
+    } target;
 
-    double gradient_time;
-    glm::vec4 base_text_color;
-    glm::vec4 target_text_color;
-    SDL_Texture* base_bg_texture;
-    SDL_Texture* target_bg_texture;
+    void render(Renderer* renderer) override;
 };
 
 class Renderer {
 public:
     SDL_Window* window;
     SDL_Renderer* renderer;
-    int width;
-    int height;
-
     TTF_Font* font;
     TTF_TextEngine* text_engine;
-
     FcConfig* fc_config;
+
+    int width;
+    int height;
 
     double FPS;
     double delta_time;
@@ -113,29 +101,13 @@ public:
     glm::vec2 mouse_pos;
     SDL_MouseButtonFlags mouse_flags;
 
-    std::unordered_map<glm::vec4, Button_State> button_states;
-    std::unordered_map<glm::vec4, Button_CState> button_cstates;
-
-    SDL_Texture* text_bg_texture;
-    SDL_Texture* textfield_bg_texture;
-    SDL_Texture* button_bg_texture;
-    SDL_Texture* button_hover_bg_texture;
-    SDL_Texture* button_click_bg_texture;
+    std::vector<UI_Element*> elements;
 
     void init();
     void deinit();
     void render();
+};
 
-    // Note: all drawing functions use:
-    // - TODO: CHOOSE: normalized coordinates
-    // - position defined in bounds is at the left-top corner of the UI element
-    void draw_color_text(std::string str, glm::vec4 bounds, Text_CStyle style);
-    void draw_color_textfield(std::string* str, bool* focused, glm::vec4 bounds, Textfield_CStyle style);
-    Button_CState draw_color_button(std::string str, glm::vec4 bounds, Button_CStyle style);
-
-    void draw_text(std::string str, glm::vec4 bounds, Text_Style style);
-    void draw_textfield(std::string* str, bool* focused, glm::vec4 bounds, Textfield_Style style);
-    Button_State draw_button(std::string str, glm::vec4 bounds, Button_Style style);
 };
 
 #endif // __RENDERER_H__

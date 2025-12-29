@@ -1,5 +1,7 @@
 #include "utils.h"
 
+namespace CDBugger {
+
 using namespace std;
 using namespace glm;
 
@@ -16,3 +18,5 @@ void todo(std::string msg){
     cout << "TODO: " << msg << endl;
     exit(0);
 }
+
+};

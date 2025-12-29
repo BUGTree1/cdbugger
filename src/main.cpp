@@ -3,6 +3,7 @@
 #include "debugger.h"
 
 using namespace std;
+using namespace CDBugger;
 
 int main(void){
 	Renderer renderer = Renderer();
