@@ -8,12 +8,10 @@ so we can use a global renderer state, for buttons or simmilar use callback or s
 elements so the list  will be of base element and text, button... will be subclasses)
 
 TODO:
-- make coordinates:  0...1 normalized
 - all code TODO: comments
-- finish textures and textfields
-- make UI in -1 to 1 range coordinates
-- make tiling UI mode (like slicing the elements in x%
- vertically or horizontally and rendering on the halves that also can be cut)
+- make coordinates:  0...1 normalized
+- make tiling UI mode (UI_VSlice and UI_HSlice that slice a Bounds by some percent and put other UI_Elements there)
+- make textfields
 - source code view
 - breakpoints
 - variables at breakpoint
