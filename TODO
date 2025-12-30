@@ -16,3 +16,6 @@ TODO:
 - breakpoints
 - variables at breakpoint
 - live view of variables (maybe at a "snapshot" line)
+
+NOTE:
+- UNITY has cool ui canvas anchors (https://docs.unity3d.com/Packages/com.unity.ugui@2.0/manual/UIBasicLayout.html)
