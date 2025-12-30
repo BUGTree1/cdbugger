@@ -8,10 +8,12 @@ so we can use a global renderer state, for buttons or simmilar use callback or s
 elements so the list  will be of base element and text, button... will be subclasses)
 
 TODO:
-- all code TODO: comments
 - make coordinates:  0...1 normalized
 - make tiling UI mode (UI_VSlice and UI_HSlice that slice a Bounds by some percent and put other UI_Elements there)
 - make textfields
+- Test on two monitors opening at mouse point
+- Should we ASSERT_SDL(TTF_SetTextWrapWidth(text, text_bounds.z)?
+- wierd crisp font when different Absolute_positions
 - source code view
 - breakpoints
 - variables at breakpoint

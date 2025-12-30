@@ -5,6 +5,111 @@ namespace CDBugger {
 using namespace std;
 using namespace glm;
 
+bool UI_Background::has_texture(){
+    return texture != NULL;
+}
+UI_Background::UI_Background(SDL_Texture* new_texture){
+    texture = new_texture;
+    color = Color();
+}
+UI_Background::UI_Background(Color new_color){
+    texture = NULL;
+    color = new_color;
+}
+
+Text* Text::init( Bounds new_bounds,
+    Abstract_Position   new_position,
+    std::string         new_text,
+    UI_Background       new_bg,
+    Color               new_fg
+){
+    Text* text_obj     = new Text();
+    text_obj->bounds   = new_bounds;
+    text_obj->position = new_position;
+    text_obj->text     = new_text;
+    text_obj->bg       = new_bg;
+    text_obj->fg       = new_fg;
+    text_obj->init();
+    return text_obj;
+};
+void Text::init() {};
+void Text::deinit() {
+    if(bg.texture != NULL) {
+        SDL_DestroyTexture(bg.texture);
+    }
+}
+
+Button* Button::init(Bounds new_bounds,
+    Abstract_Position       new_text_position,
+    std::string             new_text,
+    UI_Background           new_bg,
+    UI_Background           new_hover_bg,
+    UI_Background           new_click_bg,
+    Color                   new_fg,
+    Color                   new_hover_fg,
+    Color                   new_click_fg,
+    double                  new_gradient_duration,
+    void*                   new_user_pointer,
+    void (*new_hover_cb)    (Renderer* renderer, void* user_pointer),
+    void (*new_unhover_cb)  (Renderer* renderer, void* user_pointer),
+    void (*new_click_cb)    (Renderer* renderer, void* user_pointer),
+    void (*new_up_cb)       (Renderer* renderer, void* user_pointer)
+){
+    Button* button            = new Button();
+    button->bounds            = new_bounds;
+    button->text_position     = new_text_position;
+    button->text              = new_text;
+    button->bg                = new_bg;
+    button->hover_bg          = new_hover_bg;
+    button->click_bg          = new_click_bg;
+    button->fg                = new_fg;
+    button->hover_fg          = new_hover_fg;
+    button->click_fg          = new_click_fg;
+    button->gradient_duration = new_gradient_duration;
+    button->user_pointer      = new_user_pointer;
+    button->hover_cb          = new_hover_cb;
+    button->unhover_cb        = new_unhover_cb;
+    button->click_cb          = new_click_cb;
+    button->up_cb             = new_up_cb;
+    button->init();
+    return button;
+}
+
+void Button::init() {
+    //set start gradient
+    base   = {bg, fg};
+    target = {bg, fg};
+}
+
+void Button::deinit() {
+    if(bg.texture != NULL){
+        SDL_DestroyTexture(bg.texture);
+    }
+    if(hover_bg.texture != NULL){
+        SDL_DestroyTexture(hover_bg.texture);
+    }
+    if(click_bg.texture != NULL){
+        SDL_DestroyTexture(click_bg.texture);
+    }
+    if(base.bg.texture != NULL){
+        SDL_DestroyTexture(base.bg.texture);
+    }
+    if(target.bg.texture != NULL){
+        SDL_DestroyTexture(target.bg.texture);
+    }
+}
+
+SDL_Texture* Renderer::load_texture(string file) {
+    const SDL_BlendMode texture_blend_mode = SDL_BLENDMODE_ADD;
+    const SDL_ScaleMode texture_scale_mode = SDL_SCALEMODE_NEAREST;
+
+    SDL_Texture* texture = IMG_LoadTexture(renderer, file.c_str());
+    ASSERT_SDL(texture);
+    SDL_SetTextureBlendMode(texture, texture_blend_mode);
+    SDL_SetTextureScaleMode(texture, texture_scale_mode);
+    return texture;
+}
+
 void Renderer::init() {
     width = 800;
     height = 480;
@@ -57,55 +162,101 @@ void Renderer::init() {
     text_engine = TTF_CreateRendererTextEngine(renderer);
     ASSERT_SDL(text_engine);
 
-    //text_bg_texture         = IMG_LoadTexture(renderer, "text_bg.png");
-    //textfield_bg_texture    = IMG_LoadTexture(renderer, "textfield_bg.png");
-    //button_bg_texture       = IMG_LoadTexture(renderer, "button_bg.png");
-    //button_hover_bg_texture = IMG_LoadTexture(renderer, "button_bg_hover.png");
-    //button_click_bg_texture = IMG_LoadTexture(renderer, "button_bg_click.png");
-    //ASSERT_SDL(text_bg_texture);
-    //ASSERT_SDL(textfield_bg_texture);
-    //ASSERT_SDL(button_bg_texture);
-    //ASSERT_SDL(button_hover_bg_texture);
-    //ASSERT_SDL(button_click_bg_texture);
-    ////TODO: IDK: should all be ADD not only buttons?
-    //SDL_BlendMode texture_blend_mode = SDL_BLENDMODE_ADD;
-    //SDL_SetTextureBlendMode(text_bg_texture, texture_blend_mode);
-    //SDL_SetTextureBlendMode(textfield_bg_texture, texture_blend_mode);
-    //SDL_SetTextureBlendMode(button_bg_texture, texture_blend_mode);
-    //SDL_SetTextureBlendMode(button_hover_bg_texture, texture_blend_mode);
-    //SDL_SetTextureBlendMode(button_click_bg_texture, texture_blend_mode);
-    //SDL_ScaleMode texture_scale_mode = SDL_SCALEMODE_NEAREST;
-    //SDL_SetTextureScaleMode(text_bg_texture, texture_scale_mode);
-    //SDL_SetTextureScaleMode(textfield_bg_texture, texture_scale_mode);
-    //SDL_SetTextureScaleMode(button_bg_texture, texture_scale_mode);
-    //SDL_SetTextureScaleMode(button_hover_bg_texture, texture_scale_mode);
-    //SDL_SetTextureScaleMode(button_click_bg_texture, texture_scale_mode);
+    elements.push_back(Button::init(
+        Bounds(100,100,100,100),
+        POSITION_CENTER,
+        "Button",
+        load_texture("button_bg.png"),
+        load_texture("button_bg_hover.png"),
+        load_texture("button_bg_click.png"),
+        Color(1  ,1  ,1  ,1),
+        Color(0.5,0.5,0.5,1),
+        Color(0  ,0  ,0  ,1),
+        0.1,
+        NULL,
+        [](Renderer*, void*){cout << "hover" << endl;},
+        [](Renderer*, void*){cout << "unhover" << endl;},
+        [](Renderer*, void*){cout << "click" << endl;},
+        [](Renderer*, void*){cout << "up" << endl;}
+    ));
 
-    Button* button = new Button();
-    button->bounds = Bounds(100,100,100,100);
-    button->text_position = POSITION_CENTER;
-    button->text = "Button";
-    button->bg = (UI_Background) {NULL, Color(0  ,0  ,0  ,1)};
-    button->hover_bg = (UI_Background) {NULL, Color(0.5,0.5,0.5,1)};
-    button->click_bg = (UI_Background) {NULL, Color(1  ,1  ,1  ,1)};
-    button->fg = Color(1  ,1  ,1  ,1);
-    button->hover_fg = Color(0.5,0.5,0.5,1);
-    button->click_fg = Color(0  ,0  ,0  ,1);
-    button->gradient_duration = 0.1;
+    elements.push_back(Text::init(
+        Bounds(300,100,100,100),
+        POSITION_LT_CORNER,
+        "Text",
+        load_texture("text_bg.png"),
+        Color(1  ,1  ,1  ,1)
+    ));
 
-    // TODO: MAYBE AUTOMATE THIS?
-    button->base   = {button->bg, button->fg};
-    button->target = {button->bg, button->fg};
+    elements.push_back(Text::init(
+        Bounds(500,100,100,100),
+        POSITION_TOP,
+        "Text",
+        load_texture("text_bg.png"),
+        Color(1  ,1  ,1  ,1)
+    ));
 
-    elements.push_back(button);
+    elements.push_back(Text::init(
+        Bounds(700,100,100,100),
+        POSITION_RT_CORNER,
+        "Text",
+        load_texture("text_bg.png"),
+        Color(1  ,1  ,1  ,1)
+    ));
+
+    elements.push_back(Text::init(
+        Bounds(300,300,100,100),
+        POSITION_LEFT,
+        "Text",
+        load_texture("text_bg.png"),
+        Color(1  ,1  ,1  ,1)
+    ));
+
+    elements.push_back(Text::init(
+        Bounds(500,300,100,100),
+        POSITION_CENTER,
+        "Text",
+        load_texture("text_bg.png"),
+        Color(1  ,1  ,1  ,1)
+    ));
+
+    elements.push_back(Text::init(
+        Bounds(700,300,100,100),
+        POSITION_RIGHT,
+        "Text",
+        load_texture("text_bg.png"),
+        Color(1  ,1  ,1  ,1)
+    ));
+
+    elements.push_back(Text::init(
+        Bounds(300,500,100,100),
+        POSITION_LB_CORNER,
+        "Text",
+        load_texture("text_bg.png"),
+        Color(1  ,1  ,1  ,1)
+    ));
+
+    elements.push_back(Text::init(
+        Bounds(500,500,100,100),
+        POSITION_BOTTOM,
+        "Text",
+        load_texture("text_bg.png"),
+        Color(1  ,1  ,1  ,1)
+    ));
+
+    elements.push_back(Text::init(
+        Bounds(700,500,100,100),
+        POSITION_RB_CORNER,
+        "Text",
+        load_texture("text_bg.png"),
+        Color(1  ,1  ,1  ,1)
+    ));
 }
 
 void Renderer::deinit() {
-    //SDL_DestroyTexture(text_bg_texture);
-    //SDL_DestroyTexture(textfield_bg_texture);
-    //SDL_DestroyTexture(button_bg_texture);
-    //SDL_DestroyTexture(button_hover_bg_texture);
-    //SDL_DestroyTexture(button_click_bg_texture);
+    for (int i = 0; i < elements.size(); i++) {
+        elements[i]->deinit();
+    }
 
     TTF_DestroyRendererTextEngine(text_engine);
     TTF_CloseFont(font);
@@ -144,47 +295,46 @@ void Text::render(Renderer* renderer) {
     ASSERT_SDL(sdl_text);
 
     ASSERT_SDL(TTF_SetTextColorFloat(sdl_text, fg.r, fg.g, fg.b, fg.a));
-    // TODO: IDK: ASSERT_SDL(TTF_SetTextWrapWidth(text, text_bounds.z));
+    // TODO: - Should we ASSERT_SDL(TTF_SetTextWrapWidth(text, text_bounds.z)?
 
-    vec4 text_bounds = bounds;
-
-    ivec2 text_sizei = ivec2(0,0);
-    ASSERT_SDL(TTF_GetTextSize(sdl_text, &text_sizei.x, &text_sizei.y));
-    vec2 text_size = text_sizei;
-
-    //TODO: wierd crisp font when position changed
+    ivec2 render_sizei = ivec2(0,0);
+    ASSERT_SDL(TTF_GetTextSize(sdl_text, &render_sizei.x, &render_sizei.y));
+    vec2 render_size = render_sizei;
+    vec2 text_position = xy((vec4)bounds);
+    vec2 text_size = zw((vec4)bounds);
 
     switch (position) {
         case POSITION_CENTER   :
-        text_bounds = vec4(xy((vec4)bounds) + (zw((vec4)bounds) / 2.0f) - (text_size / 2.0f), zw((vec4)bounds));
+        text_position += (text_size / 2.0f) - (render_size / 2.0f);
         break;
         case POSITION_TOP      :
-
+        text_position += vec2((text_size.x / 2.0f) - (render_size.x / 2.0f), 0.0f);
         break;
         case POSITION_BOTTOM   :
-
+        text_position += vec2((text_size.x / 2.0f) - (render_size.x / 2.0f), text_size.y - render_size.y);
         break;
         case POSITION_LEFT     :
-
+        text_position += vec2(0.0f, (text_size.y / 2.0f) - (render_size.y / 2.0f));
         break;
         case POSITION_RIGHT    :
-
+        text_position += vec2(text_size.x - render_size.x, (text_size.y / 2.0f) - (render_size.y / 2.0f));
         break;
-        case POSITION_LT_CORNER:
-        break;
+        case POSITION_LT_CORNER: break;
         case POSITION_LB_CORNER:
-
+        text_position += vec2(0.0f, text_size.y - render_size.y);
         break;
         case POSITION_RT_CORNER:
-
+        text_position += vec2(text_size.x - render_size.x, 0.0f);
         break;
         case POSITION_RB_CORNER:
-
+        text_position += vec2(text_size.x - render_size.x, text_size.y - render_size.y);
         break;
         default:
         UNREACHABLE();
         break;
     }
+
+    Bounds text_bounds = Bounds(vec4(text_position, render_size));
 
     ASSERT_SDL(TTF_DrawRendererText(sdl_text, text_bounds.x, text_bounds.y));
 
@@ -193,35 +343,39 @@ void Text::render(Renderer* renderer) {
 
 void Button::render(Renderer* renderer){
     bool curr_hover = SDL_PointInRectFloat((SDL_FPoint*)&renderer->mouse_pos, (SDL_FRect*)&bounds);
-    bool curr_down = (SDL_BUTTON_LMASK & renderer->mouse_flags) && hover;
+    bool curr_down = (SDL_BUTTON_LMASK & renderer->mouse_flags) && curr_hover;
 
-    bool down_now    = !down && curr_down;
-    bool up_now      = down && !curr_down;
-    bool hover_now   = !hover && curr_hover;
-    bool unhover_now = hover && !curr_hover;
-    down      = curr_down;
-    hover     = curr_hover;
+    bool hover_now   = !hover &&  curr_hover;
+    bool unhover_now =  hover && !curr_hover;
+    bool down_now    = !down  &&  curr_down;
+    bool up_now      =  down  && !curr_down;
+
+    down             = curr_down;
+    hover            = curr_hover;
 
     if (down_now || up_now || hover_now || unhover_now) {
         gradient_time = 0.0;
     }
 
+    if (up_now){
+        target = {hover_bg, hover_fg};
+        base   = {click_bg, click_fg};
+        if(up_cb != NULL) up_cb(renderer, user_pointer);
+    }
     if (hover_now) {
         target = {hover_bg, hover_fg};
         base   = {bg, fg};
         if(hover_cb != NULL) hover_cb(renderer, user_pointer);
-    }else if (unhover_now){
-        target = {bg, fg};
-        base   = {hover_bg, hover_fg};
-        if(unhover_cb != NULL) unhover_cb(renderer, user_pointer);
-    }else if (down_now) {
+    }
+    if (down_now) {
         target = {click_bg, click_fg};
         base   = {hover_bg, hover_fg};
         if(click_cb != NULL) click_cb(renderer, user_pointer);
-    }else if (up_now){
-        target = {hover_bg, hover_fg};
-        base   = {click_bg, click_fg};
-        if(up_cb != NULL) up_cb(renderer, user_pointer);
+    }
+    if (unhover_now){
+        target = {bg, fg};
+        base   = {hover_bg, hover_fg};
+        if(unhover_cb != NULL) unhover_cb(renderer, user_pointer);
     }
 
     Text ui_text = Text();
@@ -231,12 +385,12 @@ void Button::render(Renderer* renderer){
     ui_text.fg = lerp((vec4)base.fg, (vec4)target.fg, (float)gradient_time);
     if(base.bg.texture != NULL && target.bg.texture != NULL){
         ASSERT_SDL(SDL_SetTextureAlphaModFloat(base.bg.texture, 1 - gradient_time));
-        ui_text.bg = {base.bg.texture, Color()};
+        ui_text.bg = UI_Background(base.bg.texture);
         ui_text.render(renderer);
         ASSERT_SDL(SDL_SetTextureAlphaModFloat(target.bg.texture, gradient_time));
-        ui_text.bg = {target.bg.texture, Color()};
+        ui_text.bg = UI_Background(target.bg.texture);
     }else{
-        ui_text.bg = {NULL, lerp((vec4)base.bg.color, (vec4)target.bg.color, (float)gradient_time)};
+        ui_text.bg = UI_Background(lerp((vec4)base.bg.color, (vec4)target.bg.color, (float)gradient_time));
     }
     ui_text.render(renderer);
 

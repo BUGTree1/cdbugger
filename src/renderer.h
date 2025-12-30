@@ -24,6 +24,18 @@ struct UI_Background {
     // if texture is NULL use color
     SDL_Texture* texture;
     Color color;
+
+    bool has_texture();
+
+    UI_Background() = default;
+    UI_Background(SDL_Texture* new_texture);
+    UI_Background(Color new_color);
+    operator SDL_Texture*() {
+        return texture;
+    }
+    operator Color() {
+        return color;
+    }
 };
 
 class UI_Element {
@@ -34,6 +46,9 @@ public:
     // - position (x,y) defined in bounds is at the left-top corner of the UI element
     Bounds bounds;
 
+    // init meant to be called after instantiating a child class with new keyword and setting the variables
+    virtual void init() {};
+    virtual void deinit() {};
     virtual void render(Renderer* renderer) {};
 };
 
@@ -45,6 +60,13 @@ public:
     Color         fg;
     UI_Background bg;
 
+    static Text* init( Bounds new_bounds,
+        Abstract_Position     new_position,
+        std::string           new_text,
+        UI_Background         new_bg,
+        Color                 new_fg);
+    void init() override;
+    void deinit() override;
     void render(Renderer* renderer) override;
 };
 
@@ -80,6 +102,23 @@ public:
         Color fg;
     } target;
 
+    static Button* init( Bounds new_bounds,
+        Abstract_Position       new_text_position,
+        std::string             new_text,
+        UI_Background           new_bg,
+        UI_Background           new_hover_bg,
+        UI_Background           new_click_bg,
+        Color                   new_fg,
+        Color                   new_hover_fg,
+        Color                   new_click_fg,
+        double                  new_gradient_duration,
+        void*                   new_user_pointer,
+        void (*new_hover_cb)    (Renderer* renderer, void* user_pointer),
+        void (*new_unhover_cb)  (Renderer* renderer, void* user_pointer),
+        void (*new_click_cb)    (Renderer* renderer, void* user_pointer),
+        void (*new_up_cb)       (Renderer* renderer, void* user_pointer));
+    void init() override;
+    void deinit() override;
     void render(Renderer* renderer) override;
 };
 
@@ -102,6 +141,8 @@ public:
     SDL_MouseButtonFlags mouse_flags;
 
     std::vector<UI_Element*> elements;
+
+    SDL_Texture* load_texture(std::string file);
 
     void init();
     void deinit();
